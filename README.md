@@ -75,6 +75,7 @@ npm run dev
   - editar
   - publicar / pasar a borrador
   - eliminar
+  - subir/reemplazar portada de gestion (imagen) sin pegar URL manual
 - CRUD completo de Documentos en `/admin/documentos`:
   - crear con subida de archivo a `storage.documents`
   - editar metadata y reemplazar archivo

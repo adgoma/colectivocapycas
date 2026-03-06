@@ -67,7 +67,7 @@ export default async function AdminGestionDetailPage({ params, searchParams }: A
           </p>
         ) : null}
 
-        <form action={updatePostAction} className="form-grid">
+        <form action={updatePostAction} className="form-grid" encType="multipart/form-data">
           <input type="hidden" name="id" value={post.id} />
 
           <label className="field">
@@ -85,10 +85,24 @@ export default async function AdminGestionDetailPage({ params, searchParams }: A
             <textarea name="summary" rows={3} defaultValue={post.summary ?? ""} />
           </label>
 
+          {post.cover_image_url ? (
+            <div className="field">
+              <span>Portada actual</span>
+              <img src={post.cover_image_url} alt={post.title} className="post-cover" />
+            </div>
+          ) : null}
+
           <label className="field">
-            <span>URL imagen de portada</span>
-            <input type="url" name="cover_image_url" defaultValue={post.cover_image_url ?? ""} />
+            <span>Reemplazar portada (opcional)</span>
+            <input type="file" name="cover_image" accept=".jpg,.jpeg,.png,.webp" />
           </label>
+
+          {post.cover_image_url ? (
+            <label className="field-inline">
+              <input type="checkbox" name="remove_cover_image" value="true" />
+              <span>Eliminar portada actual</span>
+            </label>
+          ) : null}
 
           <label className="field">
             <span>Contenido</span>
@@ -146,4 +160,3 @@ export default async function AdminGestionDetailPage({ params, searchParams }: A
     </section>
   );
 }
-

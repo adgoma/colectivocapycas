@@ -176,6 +176,13 @@ a {
   font-size: 0.92rem;
 }
 
+.field-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+}
+
 .field input,
 .field textarea,
 .field select {

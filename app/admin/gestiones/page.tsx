@@ -57,7 +57,7 @@ export default async function AdminGestionesPage({ searchParams }: GestionesAdmi
           </p>
         ) : null}
 
-        <form action={createPostAction} className="form-grid">
+        <form action={createPostAction} className="form-grid" encType="multipart/form-data">
           <label className="field">
             <span>Titulo</span>
             <input type="text" name="title" required placeholder="Ejemplo: Reunion con comision legal" />
@@ -74,8 +74,8 @@ export default async function AdminGestionesPage({ searchParams }: GestionesAdmi
           </label>
 
           <label className="field">
-            <span>URL imagen de portada (opcional)</span>
-            <input type="url" name="cover_image_url" placeholder="https://..." />
+            <span>Portada (opcional)</span>
+            <input type="file" name="cover_image" accept=".jpg,.jpeg,.png,.webp" />
           </label>
 
           <label className="field">
