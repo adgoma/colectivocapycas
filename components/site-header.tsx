@@ -13,7 +13,10 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="container site-header__content">
-        <div className="site-header__brand">Colectivo Ex Indeterminados CAS y CAP</div>
+        <Link href="/" className="site-header__brand" aria-label="Inicio Colectivo CAS y CAP">
+          <img src="/logo-oficial.png" alt="Logo oficial del Colectivo CAS y CAP" className="site-header__logo" />
+          <span>Colectivo Ex Indeterminados CAS y CAP</span>
+        </Link>
         <nav className="site-nav">
           {links.map((link) => (
             <Link key={link.href} href={link.href}>
@@ -28,4 +31,3 @@ export function SiteHeader() {
     </header>
   );
 }
-

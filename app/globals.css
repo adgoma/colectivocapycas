@@ -51,8 +51,21 @@ a {
 }
 
 .site-header__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.02em;
+}
+
+.site-header__logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 0.45rem;
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 0.15rem;
 }
 
 .site-nav {
@@ -327,6 +340,19 @@ a {
 }
 
 @media (max-width: 900px) {
+  .site-header__content {
+    align-items: flex-start;
+  }
+
+  .site-header__brand {
+    font-size: 0.93rem;
+  }
+
+  .site-header__logo {
+    width: 38px;
+    height: 38px;
+  }
+
   .admin-shell {
     grid-template-columns: 1fr;
   }
