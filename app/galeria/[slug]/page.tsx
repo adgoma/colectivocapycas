@@ -78,7 +78,13 @@ export default async function AlbumPublicDetailPage({ params }: AlbumPublicDetai
 
             return (
               <figure className="gallery-item" key={photo.id}>
-                <img src={imageUrl} alt={photo.caption ?? photo.file_name} className="gallery-item__image" />
+                <img
+                  src={imageUrl}
+                  alt={photo.caption ?? photo.file_name}
+                  className="gallery-item__image"
+                  width={1200}
+                  height={900}
+                />
                 {photo.caption ? <figcaption>{photo.caption}</figcaption> : null}
               </figure>
             );
@@ -88,4 +94,3 @@ export default async function AlbumPublicDetailPage({ params }: AlbumPublicDetai
     </section>
   );
 }
-

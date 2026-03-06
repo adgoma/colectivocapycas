@@ -36,9 +36,10 @@ export default async function GestionDetailPage({ params }: GestionDetailPagePro
       <h1 className="title">{post.title}</h1>
       <p style={{ marginTop: "-0.2rem", color: "#5f5a4d" }}>{formatDate(post.published_at)}</p>
       {post.summary ? <p className="subtitle">{post.summary}</p> : null}
-      {post.cover_image_url ? <img src={post.cover_image_url} alt={post.title} className="post-cover" /> : null}
+      {post.cover_image_url ? (
+        <img src={post.cover_image_url} alt={post.title} className="post-cover" width={1600} height={900} />
+      ) : null}
       <div className="post-content">{post.content_md}</div>
     </article>
   );
 }
-

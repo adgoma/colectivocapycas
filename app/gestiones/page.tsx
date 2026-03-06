@@ -43,7 +43,7 @@ export default async function GestionesPage() {
           <p style={{ marginTop: "-0.2rem", color: "#5f5a4d" }}>{formatDate(post.published_at)}</p>
           {post.summary ? <p>{post.summary}</p> : null}
           {post.cover_image_url ? (
-            <img src={post.cover_image_url} alt={post.title} className="post-cover" />
+            <img src={post.cover_image_url} alt={post.title} className="post-cover" width={1600} height={900} />
           ) : null}
           <Link href={`/gestiones/${post.slug}`} className="button button--ghost">
             Leer detalle

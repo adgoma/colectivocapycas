@@ -227,7 +227,11 @@ export default async function AdminAlbumDetailPage({ params, searchParams }: Adm
 
       <article className="card">
         <h2 className="title">Portada actual</h2>
-        {coverUrl ? <img src={coverUrl} alt={`Portada ${album.title}`} className="post-cover" /> : <p>Sin portada.</p>}
+        {coverUrl ? (
+          <img src={coverUrl} alt={`Portada ${album.title}`} className="post-cover" width={1600} height={900} />
+        ) : (
+          <p>Sin portada.</p>
+        )}
       </article>
 
       <article className="card">
@@ -242,7 +246,15 @@ export default async function AdminAlbumDetailPage({ params, searchParams }: Adm
 
               return (
                 <div className="photo-admin-card" key={photo.id}>
-                  {imageUrl ? <img src={imageUrl} alt={photo.caption ?? photo.file_name} className="photo-admin-image" /> : null}
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={photo.caption ?? photo.file_name}
+                      className="photo-admin-image"
+                      width={1200}
+                      height={900}
+                    />
+                  ) : null}
 
                   <p style={{ marginBottom: "0.35rem" }}>
                     <strong>{photo.file_name}</strong>

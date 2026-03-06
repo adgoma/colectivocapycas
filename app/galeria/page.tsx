@@ -95,7 +95,9 @@ export default async function GaleriaPage() {
 
           return (
             <article key={album.id} className="card album-card">
-              {coverUrl ? <img src={coverUrl} alt={album.title} className="album-card__cover" /> : null}
+              {coverUrl ? (
+                <img src={coverUrl} alt={album.title} className="album-card__cover" width={1200} height={900} />
+              ) : null}
               <h2 className="title">{album.title}</h2>
               <p style={{ marginTop: "-0.2rem", color: "#5f5a4d" }}>
                 {formatDate(album.event_date)} | {photoCount} foto(s)

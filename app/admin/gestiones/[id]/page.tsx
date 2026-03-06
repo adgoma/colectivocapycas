@@ -88,7 +88,7 @@ export default async function AdminGestionDetailPage({ params, searchParams }: A
           {post.cover_image_url ? (
             <div className="field">
               <span>Portada actual</span>
-              <img src={post.cover_image_url} alt={post.title} className="post-cover" />
+              <img src={post.cover_image_url} alt={post.title} className="post-cover" width={1600} height={900} />
             </div>
           ) : null}
 
