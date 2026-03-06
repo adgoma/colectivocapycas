@@ -67,7 +67,7 @@ export default async function AdminGestionDetailPage({ params, searchParams }: A
           </p>
         ) : null}
 
-        <form action={updatePostAction} className="form-grid" encType="multipart/form-data">
+        <form action={updatePostAction} className="form-grid">
           <input type="hidden" name="id" value={post.id} />
 
           <label className="field">

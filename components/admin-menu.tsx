@@ -6,7 +6,7 @@ const links = [
   { href: "/admin/gestiones", label: "Gestionar gestiones" },
   { href: "/admin/documentos", label: "Gestionar documentos" },
   { href: "/admin/galeria", label: "Gestionar galeria" },
-  { href: "/admin/organizacion", label: "Datos organizacion" }
+  { href: "/admin/organizacion", label: "Organizacion y slider" }
 ];
 
 type AdminMenuProps = {

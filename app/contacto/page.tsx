@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SocialIcon, type SocialPlatform } from "@/components/social-icons";
 import { DEFAULT_CONTACT_SETTINGS, normalizeContactSettings } from "@/lib/site-settings";
 import { createClient } from "@/lib/supabase/server";
 
@@ -26,13 +27,13 @@ export default async function ContactoPage() {
 
   const contact = row ? normalizeContactSettings(row.value) : DEFAULT_CONTACT_SETTINGS;
 
-  const socialLinks = [
-    { label: "Facebook", url: toSafeUrl(contact.facebook) },
-    { label: "Instagram", url: toSafeUrl(contact.instagram) },
-    { label: "YouTube", url: toSafeUrl(contact.youtube) },
-    { label: "Telegram", url: toSafeUrl(contact.telegram) },
-    { label: "Sitio web", url: toSafeUrl(contact.website) }
-  ].filter((item) => Boolean(item.url));
+  const socialChannels: Array<{ platform: SocialPlatform; label: string; url: string | null }> = [
+    { platform: "facebook", label: "Facebook", url: toSafeUrl(contact.facebook) },
+    { platform: "tiktok", label: "TikTok", url: toSafeUrl(contact.tiktok) },
+    { platform: "youtube", label: "YouTube", url: toSafeUrl(contact.youtube) },
+    { platform: "telegram", label: "Telegram", url: toSafeUrl(contact.telegram) },
+    { platform: "website", label: "Sitio web", url: toSafeUrl(contact.website) }
+  ];
 
   const hasAnyContact =
     Boolean(contact.email) ||
@@ -40,7 +41,7 @@ export default async function ContactoPage() {
     Boolean(contact.whatsapp) ||
     Boolean(contact.address) ||
     Boolean(contact.schedule) ||
-    socialLinks.length > 0;
+    socialChannels.some((item) => Boolean(item.url));
 
   return (
     <section className="grid" style={{ gap: "1rem" }}>
@@ -81,18 +82,36 @@ export default async function ContactoPage() {
         ) : null}
       </article>
 
-      {socialLinks.length > 0 ? (
-        <article className="card">
-          <h2 className="title">Canales digitales</h2>
-          <div className="actions">
-            {socialLinks.map((item) => (
-              <Link key={item.label} href={item.url ?? "#"} target="_blank" rel="noreferrer" className="button button--ghost">
-                {item.label}
+      <article className="card">
+        <h2 className="title">Canales digitales</h2>
+        <p className="subtitle">Iconos oficiales visibles por defecto. Los canales sin enlace aparecen en gris.</p>
+        <div className="social-network-grid">
+          {socialChannels.map((item) =>
+            item.url ? (
+              <Link
+                key={item.platform}
+                href={item.url}
+                target="_blank"
+                rel="noreferrer"
+                className="social-network-card"
+              >
+                <span className="social-network-card__icon" aria-hidden="true">
+                  <SocialIcon platform={item.platform} className="social-icon" />
+                </span>
+                <span className="social-network-card__label">{item.label}</span>
               </Link>
-            ))}
-          </div>
-        </article>
-      ) : null}
+            ) : (
+              <div key={item.platform} className="social-network-card is-disabled" aria-disabled="true">
+                <span className="social-network-card__icon" aria-hidden="true">
+                  <SocialIcon platform={item.platform} className="social-icon" />
+                </span>
+                <span className="social-network-card__label">{item.label}</span>
+                <small className="social-network-card__hint">Sin enlace</small>
+              </div>
+            )
+          )}
+        </div>
+      </article>
     </section>
   );
 }

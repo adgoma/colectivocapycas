@@ -22,6 +22,35 @@ function asStringArray(value: unknown): string[] {
     .filter((entry) => entry.length > 0);
 }
 
+function asBoolean(value: unknown, fallback = false): boolean {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const lower = value.trim().toLowerCase();
+    return lower === "true" || lower === "1" || lower === "on";
+  }
+
+  return fallback;
+}
+
+function asNumber(value: unknown, fallback = 0): number {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value);
+
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return fallback;
+}
+
 export type OrganizationSettings = {
   name: string;
   institution: string;
@@ -43,9 +72,29 @@ export type ContactSettings = {
   schedule: string;
   website: string;
   facebook: string;
-  instagram: string;
+  tiktok: string;
   youtube: string;
   telegram: string;
+};
+
+export type HomeSliderSlideSettings = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  imagePath: string;
+  imageBucket: string;
+  primaryLabel: string;
+  primaryHref: string;
+  secondaryLabel: string;
+  secondaryHref: string;
+  isPublished: boolean;
+  sortOrder: number;
+};
+
+export type HomeSliderSettings = {
+  slides: HomeSliderSlideSettings[];
 };
 
 export const DEFAULT_ORGANIZATION_SETTINGS: OrganizationSettings = {
@@ -70,9 +119,13 @@ export const DEFAULT_CONTACT_SETTINGS: ContactSettings = {
   schedule: "",
   website: "",
   facebook: "",
-  instagram: "",
+  tiktok: "",
   youtube: "",
   telegram: ""
+};
+
+export const DEFAULT_HOME_SLIDER_SETTINGS: HomeSliderSettings = {
+  slides: []
 };
 
 export function normalizeOrganizationSettings(value: unknown): OrganizationSettings {
@@ -107,9 +160,50 @@ export function normalizeContactSettings(value: unknown): ContactSettings {
     schedule: asString(value.schedule),
     website: asString(value.website),
     facebook: asString(value.facebook),
-    instagram: asString(value.instagram),
+    // Backward compatible with old key "instagram".
+    tiktok: asString(value.tiktok, asString(value.instagram)),
     youtube: asString(value.youtube),
     telegram: asString(value.telegram)
   };
 }
 
+export function normalizeHomeSliderSettings(value: unknown): HomeSliderSettings {
+  if (!isRecord(value)) {
+    return DEFAULT_HOME_SLIDER_SETTINGS;
+  }
+
+  const rawSlides = Array.isArray(value.slides) ? value.slides : [];
+  const slides: HomeSliderSlideSettings[] = rawSlides
+    .map((entry, index) => {
+      if (!isRecord(entry)) {
+        return null;
+      }
+
+      const id = asString(entry.id, `slide-${index + 1}`);
+      const title = asString(entry.title);
+
+      if (!title) {
+        return null;
+      }
+
+      return {
+        id,
+        eyebrow: asString(entry.eyebrow),
+        title,
+        description: asString(entry.description),
+        imageUrl: asString(entry.imageUrl),
+        imagePath: asString(entry.imagePath),
+        imageBucket: asString(entry.imageBucket),
+        primaryLabel: asString(entry.primaryLabel, "Ver mas"),
+        primaryHref: asString(entry.primaryHref, "/"),
+        secondaryLabel: asString(entry.secondaryLabel),
+        secondaryHref: asString(entry.secondaryHref),
+        isPublished: asBoolean(entry.isPublished, true),
+        sortOrder: asNumber(entry.sortOrder, index + 1)
+      };
+    })
+    .filter((slide): slide is HomeSliderSlideSettings => Boolean(slide))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  return { slides };
+}

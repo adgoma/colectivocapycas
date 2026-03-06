@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slider";
-import { DEFAULT_ORGANIZATION_SETTINGS, normalizeOrganizationSettings } from "@/lib/site-settings";
+import {
+  DEFAULT_HOME_SLIDER_SETTINGS,
+  DEFAULT_ORGANIZATION_SETTINGS,
+  normalizeHomeSliderSettings,
+  normalizeOrganizationSettings
+} from "@/lib/site-settings";
 import { createClient } from "@/lib/supabase/server";
 
 function formatDate(value: string | null): string {
@@ -26,14 +31,14 @@ function daysSinceMarch2025(): number {
 export default async function HomePage() {
   const supabase = await createClient();
   const [
-    organizationRowResult,
+    settingsRowsResult,
     publishedPostsResult,
     publishedDocumentsResult,
     postsCountResult,
     documentsCountResult,
     albumsCountResult
   ] = await Promise.all([
-    supabase.from("site_settings").select("value").eq("key", "organization").maybeSingle(),
+    supabase.from("site_settings").select("key, value").in("key", ["organization", "home_slider"]),
     supabase
       .from("posts")
       .select("id, title, slug, summary, published_at, cover_image_url")
@@ -51,9 +56,16 @@ export default async function HomePage() {
     supabase.from("albums").select("id", { count: "exact", head: true }).eq("is_public", true)
   ]);
 
-  const organization = organizationRowResult.data
-    ? normalizeOrganizationSettings(organizationRowResult.data.value)
+  const settingsRows = settingsRowsResult.data ?? [];
+  const organizationRow = settingsRows.find((row) => row.key === "organization");
+  const sliderRow = settingsRows.find((row) => row.key === "home_slider");
+
+  const organization = organizationRow
+    ? normalizeOrganizationSettings(organizationRow.value)
     : DEFAULT_ORGANIZATION_SETTINGS;
+  const sliderSettings = sliderRow
+    ? normalizeHomeSliderSettings(sliderRow.value)
+    : DEFAULT_HOME_SLIDER_SETTINGS;
 
   const posts = publishedPostsResult.data ?? [];
   const documents = publishedDocumentsResult.data ?? [];
@@ -61,7 +73,7 @@ export default async function HomePage() {
   const latestDocument = documents[0];
   const daysSinceCutoff = daysSinceMarch2025();
 
-  const heroSlides: HomeHeroSlide[] = [
+  const fallbackSlides: HomeHeroSlide[] = [
     {
       id: "identity",
       eyebrow: "Portal Institucional",
@@ -151,6 +163,31 @@ export default async function HomePage() {
           }
         }
   ];
+
+  const managedSlides: HomeHeroSlide[] = sliderSettings.slides
+    .filter((slide) => slide.isPublished)
+    .map((slide) => ({
+      id: slide.id,
+      eyebrow: slide.eyebrow || "Comunicado",
+      title: slide.title,
+      description: slide.description,
+      imageUrl: slide.imageUrl || "/logo-oficial.png",
+      imageAlt: slide.title,
+      primaryAction: {
+        href: slide.primaryHref,
+        label: slide.primaryLabel
+      },
+      secondaryAction:
+        slide.secondaryLabel && slide.secondaryHref
+          ? {
+              href: slide.secondaryHref,
+              label: slide.secondaryLabel,
+              variant: "ghost"
+            }
+          : undefined
+    }));
+
+  const heroSlides = managedSlides.length > 0 ? managedSlides : fallbackSlides;
 
   return (
     <section className="home-stack">

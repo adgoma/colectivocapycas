@@ -57,7 +57,7 @@ export default async function AdminGestionesPage({ searchParams }: GestionesAdmi
           </p>
         ) : null}
 
-        <form action={createPostAction} className="form-grid" encType="multipart/form-data">
+        <form action={createPostAction} className="form-grid">
           <label className="field">
             <span>Titulo</span>
             <input type="text" name="title" required placeholder="Ejemplo: Reunion con comision legal" />
