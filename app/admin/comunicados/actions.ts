@@ -6,14 +6,14 @@ import { canManageContent } from "@/lib/auth/roles";
 import { slugify } from "@/lib/text/slug";
 import { createClient } from "@/lib/supabase/server";
 
-type GestionStatus = "draft" | "published";
+type PostStatus = "draft" | "published";
 
-type GestionPayload = {
+type PostPayload = {
   title: string;
   slug: string;
   summary: string | null;
   content_md: string;
-  status: GestionStatus;
+  status: PostStatus;
 };
 
 type UploadedCoverMeta = {
@@ -23,7 +23,7 @@ type UploadedCoverMeta = {
 };
 
 const POST_IMAGES_BUCKET = "post-images";
-const POST_TYPE = "gestion";
+const POST_TYPE = "comunicado";
 const ALLOWED_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp"] as const;
 const ALLOWED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
@@ -32,7 +32,7 @@ function asText(formData: FormData, key: string): string {
   return String(formData.get(key) ?? "").trim();
 }
 
-function toStatus(value: string): GestionStatus {
+function toStatus(value: string): PostStatus {
   return value === "published" ? "published" : "draft";
 }
 
@@ -53,7 +53,7 @@ async function requireAdmin() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login?next=/admin/gestiones");
+    redirect("/login?next=/admin/comunicados");
   }
 
   const { data: roleRows } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
@@ -66,7 +66,7 @@ async function requireAdmin() {
   return { supabase, user };
 }
 
-function parsePayload(formData: FormData): GestionPayload {
+function parsePayload(formData: FormData): PostPayload {
   const title = asText(formData, "title");
   const rawSlug = asText(formData, "slug");
   const content = asText(formData, "content_md");
@@ -108,7 +108,7 @@ function parseDbError(errorMessage: string | null): string {
   return errorMessage;
 }
 
-function publishedAtFor(status: GestionStatus, existingPublishedAt: string | null): string | null {
+function publishedAtFor(status: PostStatus, existingPublishedAt: string | null): string | null {
   if (status !== "published") {
     return null;
   }
@@ -221,17 +221,17 @@ async function removeCoverFile(
   }
 }
 
-export async function createPostAction(formData: FormData): Promise<void> {
+export async function createComunicadoAction(formData: FormData): Promise<void> {
   const { supabase, user } = await requireAdmin();
-  let payload: GestionPayload;
+  let payload: PostPayload;
   let coverFile: File | null = null;
 
   try {
     payload = parsePayload(formData);
     coverFile = parseCoverFile(formData);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "No se pudo crear la gestion.";
-    redirect(withMessage("/admin/gestiones", "error", message));
+    const message = error instanceof Error ? error.message : "No se pudo crear el comunicado.";
+    redirect(withMessage("/admin/comunicados", "error", message));
   }
 
   let uploadedCover: UploadedCoverMeta | null = null;
@@ -241,7 +241,7 @@ export async function createPostAction(formData: FormData): Promise<void> {
       uploadedCover = await uploadCoverImage(supabase, coverFile, payload.slug);
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudo subir la portada.";
-      redirect(withMessage("/admin/gestiones", "error", message));
+      redirect(withMessage("/admin/comunicados", "error", message));
     }
   }
 
@@ -266,32 +266,32 @@ export async function createPostAction(formData: FormData): Promise<void> {
     }
 
     const message = parseDbError(error?.message ?? null);
-    redirect(withMessage("/admin/gestiones", "error", message));
+    redirect(withMessage("/admin/comunicados", "error", message));
   }
 
-  revalidatePath("/admin/gestiones");
-  revalidatePath("/gestiones");
+  revalidatePath("/admin/comunicados");
+  revalidatePath("/comunicados");
   revalidatePath("/");
-  redirect(withMessage(`/admin/gestiones/${data.id}`, "ok", "Gestion creada."));
+  redirect(withMessage(`/admin/comunicados/${data.id}`, "ok", "Comunicado creado."));
 }
 
-export async function updatePostAction(formData: FormData): Promise<void> {
+export async function updateComunicadoAction(formData: FormData): Promise<void> {
   const { supabase, user } = await requireAdmin();
   const id = asText(formData, "id");
 
   if (!id) {
-    redirect(withMessage("/admin/gestiones", "error", "ID no valido."));
+    redirect(withMessage("/admin/comunicados", "error", "ID no valido."));
   }
 
-  let payload: GestionPayload;
+  let payload: PostPayload;
   let coverFile: File | null = null;
 
   try {
     payload = parsePayload(formData);
     coverFile = parseCoverFile(formData);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "No se pudo actualizar la gestion.";
-    redirect(withMessage(`/admin/gestiones/${id}`, "error", message));
+    const message = error instanceof Error ? error.message : "No se pudo actualizar el comunicado.";
+    redirect(withMessage(`/admin/comunicados/${id}`, "error", message));
   }
 
   const removeCoverImage = asBoolean(asText(formData, "remove_cover_image"));
@@ -304,7 +304,7 @@ export async function updatePostAction(formData: FormData): Promise<void> {
     .maybeSingle();
 
   if (!currentPost) {
-    redirect(withMessage("/admin/gestiones", "error", "No se encontro la gestion."));
+    redirect(withMessage("/admin/comunicados", "error", "No se encontro el comunicado."));
   }
 
   let uploadedCover: UploadedCoverMeta | null = null;
@@ -314,7 +314,7 @@ export async function updatePostAction(formData: FormData): Promise<void> {
       uploadedCover = await uploadCoverImage(supabase, coverFile, payload.slug);
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudo subir la portada.";
-      redirect(withMessage(`/admin/gestiones/${id}`, "error", message));
+      redirect(withMessage(`/admin/comunicados/${id}`, "error", message));
     }
   }
 
@@ -346,7 +346,7 @@ export async function updatePostAction(formData: FormData): Promise<void> {
     }
 
     const message = parseDbError(error.message);
-    redirect(withMessage(`/admin/gestiones/${id}`, "error", message));
+    redirect(withMessage(`/admin/comunicados/${id}`, "error", message));
   }
 
   try {
@@ -356,24 +356,24 @@ export async function updatePostAction(formData: FormData): Promise<void> {
       await removeCoverFile(supabase, currentPost?.cover_image_bucket ?? null, currentPost?.cover_image_path ?? null);
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Gestion actualizada con advertencia en portada.";
-    redirect(withMessage(`/admin/gestiones/${id}`, "error", message));
+    const message = error instanceof Error ? error.message : "Comunicado actualizado con advertencia en portada.";
+    redirect(withMessage(`/admin/comunicados/${id}`, "error", message));
   }
 
-  revalidatePath("/admin/gestiones");
-  revalidatePath("/gestiones");
+  revalidatePath("/admin/comunicados");
+  revalidatePath("/comunicados");
   revalidatePath("/");
-  revalidatePath(`/admin/gestiones/${id}`);
-  redirect(withMessage(`/admin/gestiones/${id}`, "ok", "Gestion actualizada."));
+  revalidatePath(`/admin/comunicados/${id}`);
+  redirect(withMessage(`/admin/comunicados/${id}`, "ok", "Comunicado actualizado."));
 }
 
-export async function setPostStatusAction(formData: FormData): Promise<void> {
+export async function setComunicadoStatusAction(formData: FormData): Promise<void> {
   const { supabase, user } = await requireAdmin();
   const id = asText(formData, "id");
   const targetStatus = toStatus(asText(formData, "target_status"));
 
   if (!id) {
-    redirect(withMessage("/admin/gestiones", "error", "ID no valido."));
+    redirect(withMessage("/admin/comunicados", "error", "ID no valido."));
   }
 
   const { data: currentPost, error: findError } = await supabase
@@ -384,7 +384,7 @@ export async function setPostStatusAction(formData: FormData): Promise<void> {
     .maybeSingle();
 
   if (findError || !currentPost) {
-    redirect(withMessage("/admin/gestiones", "error", "No se encontro la gestion."));
+    redirect(withMessage("/admin/comunicados", "error", "No se encontro el comunicado."));
   }
 
   const { error } = await supabase
@@ -398,22 +398,22 @@ export async function setPostStatusAction(formData: FormData): Promise<void> {
     .eq("post_type", POST_TYPE);
 
   if (error) {
-    redirect(withMessage("/admin/gestiones", "error", parseDbError(error.message)));
+    redirect(withMessage("/admin/comunicados", "error", parseDbError(error.message)));
   }
 
-  revalidatePath("/admin/gestiones");
-  revalidatePath(`/admin/gestiones/${id}`);
-  revalidatePath("/gestiones");
+  revalidatePath("/admin/comunicados");
+  revalidatePath(`/admin/comunicados/${id}`);
+  revalidatePath("/comunicados");
   revalidatePath("/");
-  redirect(withMessage("/admin/gestiones", "ok", "Estado actualizado."));
+  redirect(withMessage("/admin/comunicados", "ok", "Estado actualizado."));
 }
 
-export async function deletePostAction(formData: FormData): Promise<void> {
+export async function deleteComunicadoAction(formData: FormData): Promise<void> {
   const { supabase } = await requireAdmin();
   const id = asText(formData, "id");
 
   if (!id) {
-    redirect(withMessage("/admin/gestiones", "error", "ID no valido."));
+    redirect(withMessage("/admin/comunicados", "error", "ID no valido."));
   }
 
   const { data: postRow } = await supabase
@@ -424,24 +424,25 @@ export async function deletePostAction(formData: FormData): Promise<void> {
     .maybeSingle();
 
   if (!postRow) {
-    redirect(withMessage("/admin/gestiones", "error", "No se encontro la gestion."));
+    redirect(withMessage("/admin/comunicados", "error", "No se encontro el comunicado."));
   }
 
   const { error } = await supabase.from("posts").delete().eq("id", id).eq("post_type", POST_TYPE);
 
   if (error) {
-    redirect(withMessage("/admin/gestiones", "error", parseDbError(error.message)));
+    redirect(withMessage("/admin/comunicados", "error", parseDbError(error.message)));
   }
 
   try {
     await removeCoverFile(supabase, postRow?.cover_image_bucket ?? null, postRow?.cover_image_path ?? null);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Gestion eliminada con advertencia en portada.";
-    redirect(withMessage("/admin/gestiones", "error", message));
+    const message = error instanceof Error ? error.message : "Comunicado eliminado con advertencia en portada.";
+    redirect(withMessage("/admin/comunicados", "error", message));
   }
 
-  revalidatePath("/admin/gestiones");
-  revalidatePath("/gestiones");
+  revalidatePath("/admin/comunicados");
+  revalidatePath("/comunicados");
   revalidatePath("/");
-  redirect(withMessage("/admin/gestiones", "ok", "Gestion eliminada."));
+  redirect(withMessage("/admin/comunicados", "ok", "Comunicado eliminado."));
 }
+

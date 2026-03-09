@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { deletePostAction, setPostStatusAction, updatePostAction } from "@/app/admin/gestiones/actions";
+import { deleteComunicadoAction, setComunicadoStatusAction, updateComunicadoAction } from "@/app/admin/comunicados/actions";
 import { createClient } from "@/lib/supabase/server";
 
-type AdminGestionDetailPageProps = {
+type AdminComunicadoDetailPageProps = {
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
@@ -30,7 +30,7 @@ function formatDate(value: string | null): string {
   });
 }
 
-export default async function AdminGestionDetailPage({ params, searchParams }: AdminGestionDetailPageProps) {
+export default async function AdminComunicadoDetailPage({ params, searchParams }: AdminComunicadoDetailPageProps) {
   const routeParams = await params;
   const queryParams = await searchParams;
   const errorMessage = asText(queryParams.error);
@@ -41,7 +41,7 @@ export default async function AdminGestionDetailPage({ params, searchParams }: A
     .from("posts")
     .select("id, title, slug, summary, content_md, status, published_at, updated_at, cover_image_url")
     .eq("id", routeParams.id)
-    .eq("post_type", "gestion")
+    .eq("post_type", "comunicado")
     .maybeSingle();
 
   if (error || !post) {
@@ -51,7 +51,7 @@ export default async function AdminGestionDetailPage({ params, searchParams }: A
   return (
     <section className="grid" style={{ gap: "1rem" }}>
       <article className="card">
-        <h1 className="title">Editar gestion</h1>
+        <h1 className="title">Editar comunicado</h1>
         <p className="subtitle">
           Ultima actualizacion: <strong>{formatDate(post.updated_at)}</strong>
         </p>
@@ -68,7 +68,7 @@ export default async function AdminGestionDetailPage({ params, searchParams }: A
           </p>
         ) : null}
 
-        <form action={updatePostAction} className="form-grid">
+        <form action={updateComunicadoAction} className="form-grid">
           <input type="hidden" name="id" value={post.id} />
 
           <label className="field">
@@ -127,7 +127,7 @@ export default async function AdminGestionDetailPage({ params, searchParams }: A
       <article className="card">
         <h2 className="title">Acciones rapidas</h2>
         <div className="actions">
-          <form action={setPostStatusAction}>
+          <form action={setComunicadoStatusAction}>
             <input type="hidden" name="id" value={post.id} />
             <input type="hidden" name="target_status" value={post.status === "published" ? "draft" : "published"} />
             <button className="button button--ghost" type="submit">
@@ -135,19 +135,19 @@ export default async function AdminGestionDetailPage({ params, searchParams }: A
             </button>
           </form>
 
-          <form action={deletePostAction}>
+          <form action={deleteComunicadoAction}>
             <input type="hidden" name="id" value={post.id} />
             <button className="button button--danger" type="submit">
-              Eliminar gestion
+              Eliminar comunicado
             </button>
           </form>
 
-          <Link href="/admin/gestiones" className="button button--ghost">
+          <Link href="/admin/comunicados" className="button button--ghost">
             Volver al listado
           </Link>
 
           {post.status === "published" ? (
-            <Link href={`/gestiones/${post.slug}`} className="button button--ghost">
+            <Link href={`/comunicados/${post.slug}`} className="button button--ghost">
               Ver publicacion
             </Link>
           ) : null}
@@ -161,3 +161,4 @@ export default async function AdminGestionDetailPage({ params, searchParams }: A
     </section>
   );
 }
+

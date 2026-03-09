@@ -47,6 +47,7 @@ export async function SiteFooter() {
 
   const quickLinks = [
     { href: "/quienes-somos", label: "Quienes somos" },
+    { href: "/comunicados", label: "Comunicados" },
     { href: "/gestiones", label: "Gestiones" },
     { href: "/documentos", label: "Documentos" },
     { href: "/galeria", label: "Galeria" },

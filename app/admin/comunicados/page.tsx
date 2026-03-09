@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { createPostAction, deletePostAction, setPostStatusAction } from "@/app/admin/gestiones/actions";
+import { createComunicadoAction, deleteComunicadoAction, setComunicadoStatusAction } from "@/app/admin/comunicados/actions";
 import { createClient } from "@/lib/supabase/server";
 
-type GestionesAdminPageProps = {
+type ComunicadosAdminPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
@@ -28,7 +28,7 @@ function formatDate(value: string | null): string {
   });
 }
 
-export default async function AdminGestionesPage({ searchParams }: GestionesAdminPageProps) {
+export default async function AdminComunicadosPage({ searchParams }: ComunicadosAdminPageProps) {
   const params = await searchParams;
   const errorMessage = asText(params.error);
   const okMessage = asText(params.ok);
@@ -37,14 +37,14 @@ export default async function AdminGestionesPage({ searchParams }: GestionesAdmi
   const { data: posts } = await supabase
     .from("posts")
     .select("id, title, slug, status, published_at, updated_at")
-    .eq("post_type", "gestion")
+    .eq("post_type", "comunicado")
     .order("updated_at", { ascending: false });
 
   return (
     <section className="grid" style={{ gap: "1rem" }}>
       <article className="card">
-        <h1 className="title">Gestionar gestiones</h1>
-        <p className="subtitle">Crear nuevas publicaciones para la cronologia publica del colectivo.</p>
+        <h1 className="title">Gestionar comunicados</h1>
+        <p className="subtitle">Crear y publicar avisos oficiales del colectivo.</p>
 
         {errorMessage ? (
           <p className="notice notice--error" role="status">
@@ -58,15 +58,15 @@ export default async function AdminGestionesPage({ searchParams }: GestionesAdmi
           </p>
         ) : null}
 
-        <form action={createPostAction} className="form-grid">
+        <form action={createComunicadoAction} className="form-grid">
           <label className="field">
             <span>Titulo</span>
-            <input type="text" name="title" required placeholder="Ejemplo: Reunion con comision legal" />
+            <input type="text" name="title" required placeholder="Ejemplo: Convocatoria de asamblea" />
           </label>
 
           <label className="field">
             <span>Slug (opcional)</span>
-            <input type="text" name="slug" placeholder="reunion-comision-legal" />
+            <input type="text" name="slug" placeholder="convocatoria-asamblea" />
           </label>
 
           <label className="field">
@@ -81,7 +81,7 @@ export default async function AdminGestionesPage({ searchParams }: GestionesAdmi
 
           <label className="field">
             <span>Contenido</span>
-            <textarea name="content_md" rows={8} required placeholder="Detalle de la gestion..." />
+            <textarea name="content_md" rows={8} required placeholder="Texto del comunicado..." />
           </label>
 
           <label className="field">
@@ -93,14 +93,14 @@ export default async function AdminGestionesPage({ searchParams }: GestionesAdmi
           </label>
 
           <button className="button button--primary" type="submit">
-            Crear gestion
+            Crear comunicado
           </button>
         </form>
       </article>
 
       <article className="card">
-        <h2 className="title">Gestiones registradas</h2>
-        {!posts || posts.length === 0 ? <p>No hay gestiones todavia.</p> : null}
+        <h2 className="title">Comunicados registrados</h2>
+        {!posts || posts.length === 0 ? <p>No hay comunicados todavia.</p> : null}
 
         {posts && posts.length > 0 ? (
           <div className="table-wrap">
@@ -127,11 +127,11 @@ export default async function AdminGestionesPage({ searchParams }: GestionesAdmi
                     <td>{formatDate(post.updated_at)}</td>
                     <td>
                       <div className="actions">
-                        <Link href={`/admin/gestiones/${post.id}`} className="button button--ghost">
+                        <Link href={`/admin/comunicados/${post.id}`} className="button button--ghost">
                           Editar
                         </Link>
 
-                        <form action={setPostStatusAction}>
+                        <form action={setComunicadoStatusAction}>
                           <input type="hidden" name="id" value={post.id} />
                           <input
                             type="hidden"
@@ -143,7 +143,7 @@ export default async function AdminGestionesPage({ searchParams }: GestionesAdmi
                           </button>
                         </form>
 
-                        <form action={deletePostAction}>
+                        <form action={deleteComunicadoAction}>
                           <input type="hidden" name="id" value={post.id} />
                           <button className="button button--danger" type="submit">
                             Eliminar
@@ -161,3 +161,4 @@ export default async function AdminGestionesPage({ searchParams }: GestionesAdmi
     </section>
   );
 }
+

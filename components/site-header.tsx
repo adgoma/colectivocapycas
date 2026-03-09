@@ -1,13 +1,5 @@
 import Link from "next/link";
-
-const links = [
-  { href: "/", label: "Inicio" },
-  { href: "/quienes-somos", label: "Quienes somos" },
-  { href: "/gestiones", label: "Gestiones" },
-  { href: "/documentos", label: "Documentos" },
-  { href: "/galeria", label: "Galeria" },
-  { href: "/contacto", label: "Contacto" }
-];
+import { SiteNav } from "@/components/site-nav";
 
 export function SiteHeader() {
   return (
@@ -23,16 +15,8 @@ export function SiteHeader() {
           />
           <span>Colectivo Ex Indeterminados CAS y CAP</span>
         </Link>
-        <nav className="site-nav">
-          {links.map((link) => (
-            <Link key={link.href} href={link.href}>
-              {link.label}
-            </Link>
-          ))}
-          <Link href="/admin" className="button button--ghost">
-            Admin
-          </Link>
-        </nav>
+
+        <SiteNav />
       </div>
     </header>
   );

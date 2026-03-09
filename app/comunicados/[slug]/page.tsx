@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-type GestionDetailPageProps = {
+type ComunicadoDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
 
@@ -17,14 +17,14 @@ function formatDate(value: string | null): string {
   });
 }
 
-export default async function GestionDetailPage({ params }: GestionDetailPageProps) {
+export default async function ComunicadoDetailPage({ params }: ComunicadoDetailPageProps) {
   const routeParams = await params;
   const supabase = await createClient();
   const { data: post, error } = await supabase
     .from("posts")
     .select("title, summary, content_md, cover_image_url, published_at, status")
     .eq("slug", routeParams.slug)
-    .eq("post_type", "gestion")
+    .eq("post_type", "comunicado")
     .eq("status", "published")
     .maybeSingle();
 
@@ -44,3 +44,4 @@ export default async function GestionDetailPage({ params }: GestionDetailPagePro
     </article>
   );
 }
+

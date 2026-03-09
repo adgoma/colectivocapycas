@@ -3,6 +3,7 @@ import { logoutAction } from "@/app/login/actions";
 
 const links = [
   { href: "/admin", label: "Resumen" },
+  { href: "/admin/comunicados", label: "Gestionar comunicados" },
   { href: "/admin/gestiones", label: "Gestionar gestiones" },
   { href: "/admin/documentos", label: "Gestionar documentos" },
   { href: "/admin/galeria", label: "Gestionar galeria" },

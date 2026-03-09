@@ -13,28 +13,28 @@ function formatDate(value: string | null): string {
   });
 }
 
-export default async function GestionesPage() {
+export default async function ComunicadosPage() {
   const supabase = await createClient();
   const { data: posts } = await supabase
     .from("posts")
     .select("id, title, slug, summary, published_at, cover_image_url")
-    .eq("post_type", "gestion")
+    .eq("post_type", "comunicado")
     .eq("status", "published")
     .order("published_at", { ascending: false });
 
   return (
     <section className="grid" style={{ gap: "1rem" }}>
       <article className="card">
-        <h1 className="title">Gestiones y avances</h1>
+        <h1 className="title">Comunicados oficiales</h1>
         <p className="subtitle">
-          Seccion cronologica con reuniones, documentos presentados y avances del proceso de reincorporacion.
+          Publicaciones informativas del colectivo para avisos, coordinaciones y anuncios importantes.
         </p>
       </article>
 
       {!posts || posts.length === 0 ? (
         <article className="card">
-          <h2 className="title">Sin publicaciones aun</h2>
-          <p>Pronto se publicaran las gestiones oficiales del colectivo.</p>
+          <h2 className="title">Sin comunicados aun</h2>
+          <p>Pronto se publicaran los comunicados oficiales del colectivo.</p>
         </article>
       ) : null}
 
@@ -46,11 +46,12 @@ export default async function GestionesPage() {
           {post.cover_image_url ? (
             <img src={post.cover_image_url} alt={post.title} className="post-cover" width={1600} height={900} />
           ) : null}
-          <Link href={`/gestiones/${post.slug}`} className="button button--ghost">
-            Leer detalle
+          <Link href={`/comunicados/${post.slug}`} className="button button--ghost">
+            Leer comunicado
           </Link>
         </article>
       ))}
     </section>
   );
 }
+

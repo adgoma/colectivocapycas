@@ -32,9 +32,11 @@ export default async function HomePage() {
   const supabase = await createClient();
   const [
     settingsRowsResult,
-    publishedPostsResult,
+    publishedGestionesResult,
+    publishedComunicadosResult,
     publishedDocumentsResult,
-    postsCountResult,
+    gestionesCountResult,
+    comunicadosCountResult,
     documentsCountResult,
     albumsCountResult
   ] = await Promise.all([
@@ -42,6 +44,14 @@ export default async function HomePage() {
     supabase
       .from("posts")
       .select("id, title, slug, summary, published_at, cover_image_url")
+      .eq("post_type", "gestion")
+      .eq("status", "published")
+      .order("published_at", { ascending: false })
+      .limit(6),
+    supabase
+      .from("posts")
+      .select("id, title, slug, summary, published_at, cover_image_url")
+      .eq("post_type", "comunicado")
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(6),
@@ -51,7 +61,16 @@ export default async function HomePage() {
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(6),
-    supabase.from("posts").select("id", { count: "exact", head: true }).eq("status", "published"),
+    supabase
+      .from("posts")
+      .select("id", { count: "exact", head: true })
+      .eq("post_type", "gestion")
+      .eq("status", "published"),
+    supabase
+      .from("posts")
+      .select("id", { count: "exact", head: true })
+      .eq("post_type", "comunicado")
+      .eq("status", "published"),
     supabase.from("documents").select("id", { count: "exact", head: true }).eq("status", "published"),
     supabase.from("albums").select("id", { count: "exact", head: true }).eq("is_public", true)
   ]);
@@ -67,9 +86,11 @@ export default async function HomePage() {
     ? normalizeHomeSliderSettings(sliderRow.value)
     : DEFAULT_HOME_SLIDER_SETTINGS;
 
-  const posts = publishedPostsResult.data ?? [];
+  const gestiones = publishedGestionesResult.data ?? [];
+  const comunicados = publishedComunicadosResult.data ?? [];
   const documents = publishedDocumentsResult.data ?? [];
-  const latestPost = posts[0];
+  const latestGestion = gestiones[0];
+  const latestComunicado = comunicados[0];
   const latestDocument = documents[0];
   const daysSinceCutoff = daysSinceMarch2025();
 
@@ -91,16 +112,16 @@ export default async function HomePage() {
         variant: "ghost"
       }
     },
-    latestPost
+    latestGestion
       ? {
           id: "latest-gestion",
           eyebrow: "Ultima gestion publicada",
-          title: latestPost.title,
-          description: latestPost.summary || `Actualizacion publicada el ${formatDate(latestPost.published_at)}.`,
-          imageUrl: latestPost.cover_image_url,
-          imageAlt: latestPost.title,
+          title: latestGestion.title,
+          description: latestGestion.summary || `Actualizacion publicada el ${formatDate(latestGestion.published_at)}.`,
+          imageUrl: latestGestion.cover_image_url,
+          imageAlt: latestGestion.title,
           primaryAction: {
-            href: `/gestiones/${latestPost.slug}`,
+            href: `/gestiones/${latestGestion.slug}`,
             label: "Leer gestion"
           },
           secondaryAction: {
@@ -122,6 +143,42 @@ export default async function HomePage() {
           },
           secondaryAction: {
             href: "/admin/gestiones",
+            label: "Panel admin",
+            variant: "ghost"
+          }
+        },
+    latestComunicado
+      ? {
+          id: "latest-comunicado",
+          eyebrow: "Comunicado reciente",
+          title: latestComunicado.title,
+          description:
+            latestComunicado.summary || `Comunicado publicado el ${formatDate(latestComunicado.published_at)}.`,
+          imageUrl: latestComunicado.cover_image_url,
+          imageAlt: latestComunicado.title,
+          primaryAction: {
+            href: `/comunicados/${latestComunicado.slug}`,
+            label: "Leer comunicado"
+          },
+          secondaryAction: {
+            href: "/comunicados",
+            label: "Ver comunicados",
+            variant: "ghost"
+          }
+        }
+      : {
+          id: "latest-comunicado-empty",
+          eyebrow: "Comunicados",
+          title: "Avisos oficiales del colectivo",
+          description: "Aqui se publican anuncios, convocatorias y mensajes institucionales.",
+          imageUrl: "/logo-oficial.png",
+          imageAlt: "Logo oficial del colectivo",
+          primaryAction: {
+            href: "/comunicados",
+            label: "Explorar comunicados"
+          },
+          secondaryAction: {
+            href: "/admin/comunicados",
             label: "Panel admin",
             variant: "ghost"
           }
@@ -196,7 +253,11 @@ export default async function HomePage() {
       <section className="home-kpis">
         <article className="card kpi-card">
           <p className="kpi-card__label">Gestiones publicadas</p>
-          <p className="kpi-card__value">{postsCountResult.count ?? 0}</p>
+          <p className="kpi-card__value">{gestionesCountResult.count ?? 0}</p>
+        </article>
+        <article className="card kpi-card">
+          <p className="kpi-card__label">Comunicados publicados</p>
+          <p className="kpi-card__value">{comunicadosCountResult.count ?? 0}</p>
         </article>
         <article className="card kpi-card">
           <p className="kpi-card__label">Documentos disponibles</p>
@@ -214,11 +275,11 @@ export default async function HomePage() {
 
       <section className="card">
         <h2 className="title">Linea de tiempo de gestiones</h2>
-        {posts.length === 0 ? <p>Aun no hay hitos publicados.</p> : null}
+        {gestiones.length === 0 ? <p>Aun no hay hitos publicados.</p> : null}
 
-        {posts.length > 0 ? (
+        {gestiones.length > 0 ? (
           <div className="timeline-list">
-            {posts.slice(0, 5).map((post) => (
+            {gestiones.slice(0, 5).map((post) => (
               <article key={post.id} className="timeline-item">
                 <p className="timeline-item__date">{formatDate(post.published_at)}</p>
                 <h3>{post.title}</h3>
@@ -232,13 +293,31 @@ export default async function HomePage() {
         ) : null}
       </section>
 
-      <section className="split-grid">
+      <section className="grid grid--3">
+        <article className="card">
+          <h2 className="title">Ultimos comunicados</h2>
+          {comunicados.length === 0 ? <p>No hay comunicados publicados por el momento.</p> : null}
+          {comunicados.length > 0 ? (
+            <ul className="mini-list">
+              {comunicados.slice(0, 3).map((post) => (
+                <li key={post.id}>
+                  <Link href={`/comunicados/${post.slug}`}>{post.title}</Link>
+                  <small>{formatDate(post.published_at)}</small>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <Link href="/comunicados" className="button button--ghost">
+            Ver todos los comunicados
+          </Link>
+        </article>
+
         <article className="card">
           <h2 className="title">Ultimas gestiones</h2>
-          {posts.length === 0 ? <p>No hay gestiones publicadas por el momento.</p> : null}
-          {posts.length > 0 ? (
+          {gestiones.length === 0 ? <p>No hay gestiones publicadas por el momento.</p> : null}
+          {gestiones.length > 0 ? (
             <ul className="mini-list">
-              {posts.slice(0, 3).map((post) => (
+              {gestiones.slice(0, 3).map((post) => (
                 <li key={post.id}>
                   <Link href={`/gestiones/${post.slug}`}>{post.title}</Link>
                   <small>{formatDate(post.published_at)}</small>
